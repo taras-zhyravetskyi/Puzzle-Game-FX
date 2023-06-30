@@ -9,7 +9,8 @@ module com.example.puzzlefx {
             requires org.kordamp.ikonli.javafx;
             requires org.kordamp.bootstrapfx.core;
             requires com.almasb.fxgl.all;
-    requires lombok;
+    requires java.desktop;
+    requires javafx.swing;
 
     opens com.example.puzzlefx to javafx.fxml;
     exports com.example.puzzlefx;
