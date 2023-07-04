@@ -6,6 +6,7 @@ import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -13,7 +14,7 @@ import java.awt.image.ImagingOpException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -28,29 +29,30 @@ public class ImageServiceImpl implements ImageService {
         int eHeight = image.getHeight() / numOfRows;
         int x = 0;
         int y = 0;
-        int count = 0;
+        int count = numOfColumns * numOfRows;
 
         String absolutePath = createTilesDir(path);
 
+        deleteFilesFromDirectory(absolutePath);
+
         for (int i = 0; i < numOfRows; i++) {
-            y = 0;
+            x = 0;
             for (int j = 0; j < numOfColumns; j++) {
                 try {
-                    System.out.println("creating piece: " + i + " " + j);
-                    count++;
-                    BufferedImage subImage = image.getSubimage(y, x, eWidth, eHeight);
+                    BufferedImage subImage = image.getSubimage(x, y, eWidth, eHeight);
                     File file = new File(absolutePath + "/piece" + count + ".png");
                     if (!file.exists()) {
                         file.createNewFile();
                     }
+                    count--;
                     ImageIO.write(subImage, "png", file);
                     subImages.add(subImage);
                 } catch (Exception e) {
                     throw new ImagingOpException("Can't create piece " + i + " " + j + " due to " + e.getMessage());
                 }
-                y += eWidth;
+                x += eWidth;
             }
-            x += eHeight;
+            y += eHeight;
         }
         return subImages;
     }
@@ -82,6 +84,18 @@ public class ImageServiceImpl implements ImageService {
                 ImageIO.write(newImage, format, file);
             } catch (IOException ex) {
                 throw new ImagingOpException("Can`t upload image");
+            }
+        }
+    }
+
+    public void deleteFilesFromDirectory(String path) {
+        File directory = new File(path);
+        File[] allFiles = directory.listFiles();
+        if (allFiles != null) {
+            for (File file : allFiles) {
+                if (file.isFile()) {
+                    file.delete();
+                }
             }
         }
     }

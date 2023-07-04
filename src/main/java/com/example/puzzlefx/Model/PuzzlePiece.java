@@ -1,5 +1,6 @@
-package com.example.puzzlefx;
+package com.example.puzzlefx.Model;
 
+import com.example.puzzlefx.PuzzleApplication;
 import javafx.geometry.Point2D;
 import javafx.scene.Parent;
 import javafx.scene.effect.DropShadow;
@@ -22,7 +23,6 @@ public class PuzzlePiece extends Parent {
     private double startDragY;
     private Shape pieceShape;
     private Shape pieceClip;
-    private ImageView imageView = new ImageView();
     private Point2D dragAnchor;
 
     static {
@@ -56,7 +56,7 @@ public class PuzzlePiece extends Parent {
     }
 
     private void configImage(Image image) {
-        imageView.setImage(image);
+        ImageView imageView = new ImageView(image);
         imageView.setClip(pieceClip);
         setFocusTraversable(true);
         getChildren().addAll(imageView, pieceShape);
@@ -68,17 +68,10 @@ public class PuzzlePiece extends Parent {
 
 
     private Shape createPiece() {
-        Shape shape = createPieceRectangle();
+        Shape shape = new Rectangle(pieceWidth, pieceHeight);
         shape.setTranslateX(x);
         shape.setTranslateY(y);
         return shape;
-    }
-
-    private Rectangle createPieceRectangle() {
-        Rectangle rec = new Rectangle();
-        rec.setWidth(pieceWidth);
-        rec.setHeight(pieceHeight);
-        return rec;
     }
 
     private void setUpMouseEvents() {

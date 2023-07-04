@@ -3,6 +3,7 @@ package com.example.puzzlefx.service;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
+
 import java.awt.image.BufferedImage;
 import java.util.List;
 

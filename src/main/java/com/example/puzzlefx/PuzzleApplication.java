@@ -1,5 +1,7 @@
 package com.example.puzzlefx;
 
+import com.example.puzzlefx.Model.PuzzlePiece;
+import com.example.puzzlefx.service.AutoSolvingAlgorithm;
 import com.example.puzzlefx.service.ImageService;
 import com.example.puzzlefx.service.impl.ImageServiceImpl;
 import javafx.animation.KeyFrame;
@@ -18,11 +20,8 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.scene.image.Image;
 import javafx.util.Duration;
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.awt.image.ImagingOpException;
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.List;
@@ -36,14 +35,15 @@ public class PuzzleApplication extends Application {
     private static final String TILES_PATH = "src/main/resources/images/tiles";
     private static final String DEFAULT_IMAGE_NAME = "default";
     private static final String IMAGE_FORMAT = "png";
-    private static List<PuzzlePiece> puzzlePieces;
-    protected static int numberOfPuzzles;
-    protected static Text text;
+    public static int numberOfPuzzles;
+    public static Text text;
     private Timeline timeline;
     private final double puzzlePieceWidth;
     private final double puzzlePieceHeight;
     private Group root;
     private List<ImageView> tiles = new ArrayList();
+    private final ImageService imageService;
+    private final AutoSolvingAlgorithm autoSolvingAlgorithm;
 
     {
         puzzlePieceWidth = RESIZED_IMAGE_WIDTH / NUM_OF_COLUMNS;
@@ -51,10 +51,10 @@ public class PuzzleApplication extends Application {
         numberOfPuzzles = NUM_OF_COLUMNS * NUM_OF_ROWS;
     }
 
-    private final ImageService imageService;
 
     {
         imageService = new ImageServiceImpl();
+        autoSolvingAlgorithm = new AutoSolvingAlgorithm();
     }
 
     private void init(Stage primaryStage) {
@@ -64,40 +64,48 @@ public class PuzzleApplication extends Application {
 
         final Desk desk = Desk.createPuzzleDesk(NUM_OF_COLUMNS, NUM_OF_ROWS, puzzlePieceWidth, puzzlePieceHeight);
 
-        makePuzzle(desk, primaryStage);
+        createPuzzle(desk, primaryStage);
     }
 
-    private void makePuzzle(Desk desk, Stage primaryStage) {
+    private void createPuzzle(Desk desk, Stage primaryStage) {
 
         File imageFile = new File(IMAGE_PATH, DEFAULT_IMAGE_NAME + "." + IMAGE_FORMAT);
         Image image = new Image(imageFile.toURI().toString());
         Image resizedImage = imageService.resizeImage(image, RESIZED_IMAGE_WIDTH, RESIZED_IMAGE_HEIGHT);
         BufferedImage bufferedImage = SwingFXUtils.fromFXImage(resizedImage, null);
         imageService.splitImage(bufferedImage, NUM_OF_ROWS, NUM_OF_COLUMNS, TILES_PATH);
-        puzzlePieces = new ArrayList<>();
+        List<PuzzlePiece> puzzlePieces = new ArrayList<>();
+        puzzlePieces = createPuzzlePieces(puzzlePieces, resizedImage, desk);
+        configButtons(desk, primaryStage, resizedImage, puzzlePieces);
+    }
 
+    private List<PuzzlePiece> createPuzzlePieces(List<PuzzlePiece> puzzlePieces,
+                                                 Image fxImage,
+                                                 Desk desk) {
+        desk.getChildren().removeAll(puzzlePieces);
+        puzzlePieces.clear();
         for (int col = 0; col < NUM_OF_COLUMNS; col++) {
             for (int row = 0; row < NUM_OF_ROWS; row++) {
                 double x = col * puzzlePieceWidth;
                 double y = row * puzzlePieceHeight;
-                final PuzzlePiece puzzlePiece = new PuzzlePiece(resizedImage, x, y, desk.getWidth(), desk.getHeight(),
+                final PuzzlePiece puzzlePiece = new PuzzlePiece(fxImage, x, y, desk.getWidth(), desk.getHeight(),
                         puzzlePieceWidth, puzzlePieceHeight);
                 puzzlePieces.add(puzzlePiece);
             }
         }
         desk.getChildren().addAll(puzzlePieces);
-        configButtons(desk, primaryStage, resizedImage);
+        return puzzlePieces;
     }
 
-    private void configButtons(Desk desk, Stage primaryStage, Image resizedImage) {
+    private void configButtons(Desk desk, Stage primaryStage, Image resizedImage, List<PuzzlePiece> puzzlePieces) {
         Button mixButton = new Button("Mix");
         onClickMixButtonAction(desk, puzzlePieces, mixButton);
 
         Button chooseImageButton = new Button("Choose Image");
-        onClickChooseImageButtonAction(desk, primaryStage, chooseImageButton);
+        onClickChooseImageButtonAction(desk, primaryStage, chooseImageButton, puzzlePieces);
 
         Button solveButton = new Button("Solve");
-        onClickSolveButtonAction(puzzlePieces, solveButton);
+        onClickSolveButtonAction(puzzlePieces, solveButton, desk);
         solveButton.setTranslateX(desk.getDeskWidth() - solveButton.getWidth() - 220);
 
         HBox buttonBox = new HBox(10);
@@ -117,7 +125,8 @@ public class PuzzleApplication extends Application {
         root.getChildren().addAll(vb, text, imageView);
     }
 
-    private void onClickChooseImageButtonAction(Desk desk, Stage primaryStage, Button chooseImageButton) {
+    private void onClickChooseImageButtonAction(Desk desk, Stage primaryStage,
+                                                Button chooseImageButton, List<PuzzlePiece> puzzlePieces) {
         if (timeline != null) {
             timeline.stop();
         }
@@ -132,16 +141,18 @@ public class PuzzleApplication extends Application {
             desk.getChildren().removeAll(puzzlePieces);
             root.getChildren().clear();
             imageService.uploadImage(primaryStage, chooseImageButton, absoluteImagePath, IMAGE_FORMAT);
-            makePuzzle(desk, primaryStage);
+            createPuzzle(desk, primaryStage);
             timeline.playFromStart();
         });
     }
 
-    private void onClickSolveButtonAction(List<PuzzlePiece> puzzlePieces, Button solveButton) {
+    private void onClickSolveButtonAction(List<PuzzlePiece> puzzlePieces, Button solveButton, Desk desk) {
         solveButton.setOnAction(actionEvent -> {
-            text.setText("AutoSolving not ready yet");
-            text.setTranslateX(70);
+            BufferedImage image = autoSolvingAlgorithm.solvePuzzle(TILES_PATH, RESIZED_IMAGE_WIDTH, RESIZED_IMAGE_HEIGHT);
+            Image fxImage = SwingFXUtils.toFXImage(image, null);
+            createPuzzlePieces(puzzlePieces, fxImage, desk);
         });
+
     }
 
     private void onClickMixButtonAction(Desk desk, List<PuzzlePiece> puzzlePieces, Button shuffleButton) {
@@ -154,26 +165,26 @@ public class PuzzleApplication extends Application {
             text.setTranslateX(80);
 
             timeline = new Timeline();
-            for (PuzzlePiece PuzzlePiece : puzzlePieces) {
-                PuzzlePiece.setActive();
-                PuzzlePiece.setVisible(true);
+            for (PuzzlePiece puzzlePiece : puzzlePieces) {
+                puzzlePiece.setActive();
+                puzzlePiece.setVisible(true);
 
                 double mixX = Math.random() *
-                        (desk.getWidth() - puzzlePieceWidth + 30f) - PuzzlePiece.getX();
+                        (desk.getWidth() - puzzlePieceWidth + 30f) - puzzlePiece.getX();
                 double mixY = Math.random() *
-                        (desk.getHeight() - puzzlePieceHeight + 30f) - PuzzlePiece.getY();
+                        (desk.getHeight() - puzzlePieceHeight + 30f) - puzzlePiece.getY();
 
                 timeline.getKeyFrames().add(
                         new KeyFrame(Duration.seconds(0.4),
-                                new KeyValue(PuzzlePiece.translateXProperty(), mixX),
-                                new KeyValue(PuzzlePiece.translateYProperty(), mixY)));
+                                new KeyValue(puzzlePiece.translateXProperty(), mixX),
+                                new KeyValue(puzzlePiece.translateYProperty(), mixY)));
             }
             timeline.playFromStart();
         });
     }
 
     public static void main(String[] args) {
-        launch();
+        launch(args);
     }
 
     @Override

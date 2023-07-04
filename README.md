@@ -15,8 +15,7 @@ To run the Puzzle FX application, please follow these steps:
 3. Run app in your JDK
 
 ## Automatic Solving Algorithm
-Automatic Solving Algorithm (Work in Progress)
 
-The automatic solving algorithm is currently under development and will be available in a future update. This algorithm will solve the puzzle for you by intelligently arranging the puzzle pieces based on their edge matches. Stay tuned for the automatic solving feature in the upcoming releases.
+The PuzzleFX's automatic solving algorithm operates by analyzing and comparing the color of puzzle piece edges. The algorithm begins with the top-left piece, identified as having the greatest color difference on its top and left edges, then sequentially places the remaining pieces based on the minimal color difference with adjacent pieces. Ultimately, the algorithm stitches the correctly placed pieces together to form the final solved image
 
 Enjoy playing Puzzle FX and have fun solving puzzles!
