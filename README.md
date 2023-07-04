@@ -12,7 +12,8 @@ To run the Puzzle FX application, please follow these steps:
 
 1. Ensure you have Java JDK (version 17 or above) installed on your machine.
 2. Clone this repository to your local machine.
-3. Run app in your JDK
+3. Run command mvn clean package
+4. Run app in your JDK
 
 ## Automatic Solving Algorithm
 
