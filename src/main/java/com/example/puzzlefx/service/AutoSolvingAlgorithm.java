@@ -24,7 +24,7 @@ public class AutoSolvingAlgorithm {
         puzzlePieces.remove(currentPiece);
         puzzle[0][0] = currentPiece;
 
-        puzzle = findOtherPieces(numberOfColumns, numberOfRows, puzzlePieces, currentPiece, puzzle);
+        puzzle = findOtherPieces(numberOfColumns, numberOfRows, puzzlePieces, puzzle);
         return mergeImages(puzzle);
     }
 
@@ -152,10 +152,7 @@ public class AutoSolvingAlgorithm {
     }
 
     PuzzlePieceForAutoSolving[][] findOtherPieces(int numberOfColumns, int numberOfRows,
-                    List<PuzzlePieceForAutoSolving> puzzlePieces, PuzzlePieceForAutoSolving currentPiece,
-                    PuzzlePieceForAutoSolving[][] puzzle) {
-        // виконуємо для кожного місця в матриці пазла
-
+                    List<PuzzlePieceForAutoSolving> puzzlePieces, PuzzlePieceForAutoSolving[][] puzzle) {
         for (int j = 1; j < numberOfColumns; j++) {
             int minDif = Integer.MAX_VALUE;
             int pieceIndex = 0;

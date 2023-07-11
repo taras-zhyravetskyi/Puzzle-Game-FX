@@ -6,24 +6,25 @@ import com.example.puzzlefx.service.ImageService;
 import com.example.puzzlefx.service.impl.ImageServiceImpl;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
-import javafx.embed.swing.SwingFXUtils;
 import javafx.animation.Timeline;
 import javafx.application.Application;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Insets;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.layout.HBox;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-import javafx.scene.image.Image;
 import javafx.util.Duration;
+
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class PuzzleApplication extends Application {
@@ -68,7 +69,6 @@ public class PuzzleApplication extends Application {
     }
 
     private void createPuzzle(Desk desk, Stage primaryStage) {
-
         File imageFile = new File(IMAGE_PATH, DEFAULT_IMAGE_NAME + "." + IMAGE_FORMAT);
         Image image = new Image(imageFile.toURI().toString());
         Image resizedImage = imageService.resizeImage(image, RESIZED_IMAGE_WIDTH, RESIZED_IMAGE_HEIGHT);
